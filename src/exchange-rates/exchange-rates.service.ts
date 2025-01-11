@@ -43,4 +43,36 @@ export class ExchangeRatesService {
     </html>
     `;
   }
+
+  async getHistoricalRate(date: string, base: string, symbols: string): Promise<any> {
+    const url = `${this.baseUrl}/${date}`;
+    const params = {
+        access_key: this.configService.get<string>('EXCHANGERATES_API_KEY'),
+        base,
+        symbols,
+    };
+
+    const response = this.httpService.get(url, { params });
+    const result = await lastValueFrom(response).then(res => res.data);
+
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Exchange Rates</title>
+    </head>
+    <body>
+      <h1>Historical Exchange Rates</h1>
+      <p>Base: ${base}</p>
+      <p>Date for rates: ${format(new Date(result.date), 'MMMM d, yyyy')}</p>
+      <p>Rates:</p>
+        <ul>
+            ${Object.keys(result.rates)
+            .map((key) => `<li>${key}: ${result.rates[key]}</li>`)
+            .join('')}
+        </ul>
+    </body>
+    </html>
+    `;
+  }
 }
